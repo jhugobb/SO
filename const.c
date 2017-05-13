@@ -25,15 +25,19 @@ int main(int argc, char **argv){
     }
     else{
         char c;
-        int i=0, iarg = 0, r;
+        int i=0, j, r;
         char buf[4096];
-        i = readln(0, buf,4096);
-        buf[i] = ':';
-        strcat(buf, argv[1]);
-        i=0;
-        while(r = write(1, &buf[i], 1)>0 && buf[i]){
-            i++;
-        }
+		char reset[4096];
+		while(i = readln(0, buf,4096)){
+			buf[i] = ':';
+			strcat(buf, argv[1]);
+			i+=strlen(argv[1]);
+			j=0;
+			while(r = write(1, &buf[j], 1)>0 && j<i){
+				j++;
+			}
+			memset(buf, 0, 4096);
+		}
         return 0;
     }
 }
