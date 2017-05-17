@@ -17,7 +17,6 @@ int main(int argc, char **argv){
     else{
         int i=0;
         char buf[4096];
-		printf("HEREBIATCH\n");
 		while((i = readln(0, buf,4096))>0){
 			buf[i-1] = ':';
 			strcat(buf, argv[1]);
