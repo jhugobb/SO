@@ -7,20 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <assert.h>
-
-ssize_t readln(int fildes, char *buf, size_t nbyte){
-	char c;
-	ssize_t i = 0, r;
-	do{
-		r = read(fildes, &c, 1);
-		if(r==1){
-			buf[i] = c;
-			i++;
-		}
-	} while(r && c != '\n');
-	return i;
-}
-
+#include "readln.h"
 
 int main(int argc, char **argv){
     if(argc != 2 ){

@@ -6,34 +6,14 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <signal.h>
+#include "readln.h"
+#include "concat.h"
 
 #define READ 0
 #define WRITE 1
 
 pid_t nodes[10];
-
-char* concat(const char *s1, const char *s2)
-{
-    const size_t len1 = strlen(s1);
-    const size_t len2 = strlen(s2);
-    char *result = malloc(len1+len2+1);//+1 for the zero-terminator
-    strcpy(result, s1);
-    strcat(result, s2);//+1 to copy the null-terminator
-    return result;
-}
-
-ssize_t readln(int fildes, char *buf, size_t nbyte){
-	char c;
-	ssize_t i = 0, r;
-	do{
-		r = read(fildes, &c, 1);
-		if(r==1){
-			buf[i] = c;
-			i++;
-		}
-	} while(r && c != '\n');
-	return i;
-}
+pid_t connectors[10];
 
 void processInput(char **result, char *buf, char *divider){
 	int i;
@@ -47,7 +27,7 @@ pid_t node(char** argv){
 	for(i=0;i<10;nodes[i++]=-1);
 	char buf[512], *namein, *nameout;
 	pid_t p, readlnp, dupexecp, writep;
-	namein = strcat("in", argv[1]);
+	namein = concat("in", argv[1]);
 	nameout = concat("out", argv[1]);
 	mkfifo(namein, 0666);
 	mkfifo(nameout, 0666);
@@ -123,7 +103,7 @@ int main(){
 			if(input[1] != NULL){
 				kill()
 			}
-		}
+		}*/
     }
     return 0;
 }

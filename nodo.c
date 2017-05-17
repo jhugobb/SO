@@ -7,24 +7,12 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <assert.h>
+#include "readln.h"
 
 #define READ 0
 #define WRITE 1
 
 int nodes[10];
-
-ssize_t readln(int fildes, char *buf, size_t nbyte){
-	char c;
-	ssize_t i = 0, r;
-	do{
-		r = read(fildes, &c, 1);
-		if(r==1){
-			buf[i] = c;
-			i++;
-		}
-	} while(r && c != '\n');
-	return i;
-}
 
 int main(int argc, char** argv){
     int i, infd, outfd,  nonamepipein[2], nonamepipeout[2];
