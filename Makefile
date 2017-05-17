@@ -2,7 +2,7 @@ CC = gcc
 FLAGS = -Wall -g
 
 build: const
-	$(CC) $(FLAGS) controller.c readln.o concat.o -o controller
+	$(CC) $(FLAGS) controller.c readln.o concat.o processInput.o -o controller
 	$(CC) $(FLAGS) const.c readln.o -o const
 
 const: readln
@@ -11,8 +11,11 @@ const: readln
 readln: concat
 	$(CC) $(FLAGS) -c readln.c
 
-concat:
+concat: processInput
 	$(CC) $(FLAGS) -c concat.c
 
+processInput:
+	$(CC) $(FLAGS) -c processInput.c
+
 clean:
-	rm  controller fifo* *.o
+	rm  controller *.o in* out*

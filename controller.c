@@ -8,19 +8,13 @@
 #include <signal.h>
 #include "readln.h"
 #include "concat.h"
+#include "processInput.h"
 
 #define READ 0
 #define WRITE 1
 
 pid_t nodes[10];
 pid_t connectors[10];
-
-void processInput(char **result, char *buf, char *divider){
-	int i;
-	for(result[i=0]= strtok(buf, divider); result[i] != NULL; result[i] = strtok(NULL, divider)){
-        i++;
-    }
-}
 
 pid_t node(char** argv){
 	int i, infd, outfd,  nonamepipein[2], nonamepipeout[2];
