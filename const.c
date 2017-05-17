@@ -6,14 +6,18 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <assert.h>
 
-ssize_t readln(int fildes, void *buf, size_t nbyte){
+ssize_t readln(int fildes, char *buf, size_t nbyte){
 	char c;
-	ssize_t i;
-	for (i = 0; read(fildes, &c, 1) == 1 && i<nbyte && c != '\n';){
-        ((char*)buf)[i] = c;
-        i++;
-	}
+	ssize_t i = 0, r;
+	do{
+		r = read(fildes, &c, 1);
+		if(r==1){
+			buf[i] = c;
+			i++;
+		}
+	} while(r && c != '\n');
 	return i;
 }
 
@@ -24,18 +28,15 @@ int main(int argc, char **argv){
         _exit(-1);
     }
     else{
-        char c;
-        int i=0, j, r;
+        int i=0;
         char buf[4096];
-		char reset[4096];
-		while(i = readln(0, buf,4096)){
-			buf[i] = ':';
+		printf("HEREBIATCH\n");
+		while((i = readln(0, buf,4096))>0){
+			buf[i-1] = ':';
 			strcat(buf, argv[1]);
 			i+=strlen(argv[1]);
-			j=0;
-			while(r = write(1, &buf[j], 1)>0 && j<i){
-				j++;
-			}
+			strcat(buf, "\n");
+			write(1, buf, i+1);
 			memset(buf, 0, 4096);
 		}
         return 0;
