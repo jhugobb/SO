@@ -12,13 +12,26 @@
 
 pid_t nodes[10];
 
-ssize_t readln(int fildes, void *buf, size_t nbyte){
+char* concat(const char *s1, const char *s2)
+{
+    const size_t len1 = strlen(s1);
+    const size_t len2 = strlen(s2);
+    char *result = malloc(len1+len2+1);//+1 for the zero-terminator
+    strcpy(result, s1);
+    strcat(result, s2);//+1 to copy the null-terminator
+    return result;
+}
+
+ssize_t readln(int fildes, char *buf, size_t nbyte){
 	char c;
-	ssize_t i;
-	for (i = 0; read(fildes, &c, 1) == 1 && i<nbyte && c != '\n';){
-        ((char*)buf)[i] = c;
-        i++;
-	}
+	ssize_t i = 0, r;
+	do{
+		r = read(fildes, &c, 1);
+		if(r==1){
+			buf[i] = c;
+			i++;
+		}
+	} while(r && c != '\n');
 	return i;
 }
 
@@ -29,73 +42,68 @@ void processInput(char **result, char *buf, char *divider){
     }
 }
 
-int getNodeid(char *buf){
-    int i = 5, j = 0;
-    char name[4];
-    int id;
-    while(buf[i]!=' ' && buf[i]){
-        name[j] = buf[i];
-        i++;
-        j++;
-    }
-    id = atoi(name);
-    if(id >=10){
-        id = 9;
-    }
-    return id;
+pid_t node(char** argv){
+	int i, infd, outfd,  nonamepipein[2], nonamepipeout[2];
+	for(i=0;i<10;nodes[i++]=-1);
+	char buf[512], *namein, *nameout;
+	pid_t p, readlnp, dupexecp, writep;
+	namein = strcat("in", argv[1]);
+	nameout = concat("out", argv[1]);
+	mkfifo(namein, 0666);
+	mkfifo(nameout, 0666);
+	p = fork();
+	if(!p){
+		pipe(nonamepipein);
+		pipe(nonamepipeout);
+		readlnp = fork();
+		if(!readlnp){
+			infd = open(namein, O_RDONLY);
+			close(nonamepipein[READ]);
+			while((i = readln(infd, buf, 512)) > 0){
+				write(nonamepipein[WRITE], buf, i);
+			}
+		}
+		else{
+			dupexecp = fork();
+			if(!dupexecp){
+				close(nonamepipein[WRITE]);
+				close(nonamepipeout[READ]);
+				dup2(nonamepipein[READ], 0);//dup do std in para o pipe in
+				dup2(nonamepipeout[WRITE], 1);//dup do std out para o pipe out
+				execv(concat("./", argv[2]), &argv[3]);
+			}
+			else{
+				writep = fork();
+				if(!writep){
+					outfd = open(nameout, O_WRONLY);
+					close(nonamepipeout[WRITE]);
+					while((i = readln(nonamepipeout[READ], buf, 512))>0){
+						write(outfd, buf, i);
+						fsync(outfd);
+					}
+				}
+			}
+		}
+	}
+	else{
+		return p;
+	}
+	_exit(0);
 }
 
 int main(){
-    int i=0, id, infd, outfd,  nonamepipein[2], nonamepipeout[2];
+    int i=0, id;
     for(i=0;i<10;nodes[i++]=-1);
-    char buf[4096], *in, *out;
+    char buf[4096];
 	char *input[4096];
-    pid_t p, readlnp, dupexecp, writep;
     while((i = readln(0, buf, 4096)) > 0){
 		processInput(input, buf, " ");
         if(!strncmp(input[0], "node", 4)){
 			id = atoi(input[1]);
-			in = strcat("in", input[1]);
-			out = strcat("out", input[1]);
-			mkfifo(in, 0666);
-			mkfifo(out, 0666);
-			p = fork();
-            if(!p){
-				infd = open(in, O_RDONLY);
-				outfd = open(out, O_WRONLY);
-				pipe(nonamepipein);
-				pipe(nonamepipeout);
-				readlnp = fork();
-				if(!readlnp){
-					close(nonamepipein[READ]);
-					while((i = readln(infd, buf, 4096)) > 0){
-						write(nonamepipein[WRITE], buf, 4096);
-					}
-				}
-				else{
-					dupexecp = fork();
-					if(!dupexecp){
-						dup2(nonamepipein[READ], 0);//dup do std in para o pipe in
-						close(nonamepipein[READ]);
-						dup2(nonamepipeout[WRITE], 1);//dup do std out para o pipe out
-						close(nonamepipeout[WRITE]);
-						execv(strcat("./", input[2]), &input[3]);
-					}
-					else{
-						writep = fork();
-						if(!writep){
-							close(nonamepipeout[WRITE]);
-							while((i = readln(nonamepipeout[READ], buf, 4096))){
-								write(outfd, buf, 4096);
-							}
-						}
-					}
-				}
-                kill(getpid(), SIGTERM);
-            }
-            else{
-                nodes[id] = p;
-            }
+			if(id<10){
+				nodes[id] = node(input);
+			}
+			else printf("Id not in range of storage\n");
         }
         else if(!strncmp(input[0], "connect", 7)){
             printf("You typed connect!\n");
@@ -111,6 +119,11 @@ int main(){
                 if(nodes[i]!=-1) printf("I EXIST: %d\n", nodes[i]);
             }
         }
+		/*else if(!strncmp(input[0], "delete", 6)){
+			if(input[1] != NULL){
+				kill()
+			}
+		}
     }
     return 0;
 }
