@@ -3,17 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include "readln.h"
 
-int *linhas;
+int *vlines;
 int lines;
-int pronto;
+int ready;
 
-void escrever(void* buf, int size, int add){
+void writeOP(void* buf, int size, int add){
     int r;
     int i=0;
     char c;
     c = ((char*)buf)[i];
-    while ((r=(write(1,&c,1)))>0 && i<size){
+    while ((r=(write(1,&c,1)))>0 && i<size-2){
         i++;
         c = ((char*)buf)[i];
     }
@@ -24,125 +26,126 @@ void escrever(void* buf, int size, int add){
     c = ':';
     write(1,&c,1);
     c = new[i];
-    while ((r=(write(1,&c,1)))>0 && i<len && new!=NULL){
+    while ((r=(write(1,&c,1)))>0 && i<len-1 && new!=NULL){
         i++;
         c = new[i];
     }
     c = '\n';
-    write(1,&c,1);
+    write(1, &c, 1);
 }
 
-void operar(void* buf, int size, char* operation, int novo){
+void operate(void* buf, int size, char* operation, int new){
     int add=0;
     int i=0;
     if((strcmp(operation, "avg"))==0){
-        if(pronto==lines){
+        if(ready==lines){
             for(i=0; i < lines; i++){
-                add+= linhas[i];    
+                add+= vlines[i];
             }
             add = add/lines;
             for(i=lines-1; i!=0; i--){
-                linhas[i] = linhas[i-1];
+                vlines[i] = vlines[i-1];
             }
-            linhas[0]=novo;
+            vlines[0]=new;
         }
         else{
-            if (pronto==0) {
+            if (ready==0) {
                 add = 0;
-                linhas[0] = novo;
-                pronto++; 
+                vlines[0] = new;
+                ready++; 
             }
+
             else {
-                for(i=0; i<pronto; i++){
-                    add+= linhas[i];  
+                for(i=0; i<ready; i++){
+                    add+= vlines[i];
                 }
-                add = add/pronto;
-                pronto++; 
-                for(i=pronto-1; i!=0; i--){
-                    linhas[i] = linhas[i-1];
+                add = add/ready;
+                ready++; 
+                for(i=ready-1; i!=0; i--){
+                    vlines[i] = vlines[i-1];
                 }
-                linhas[0]=novo;
+                vlines[0]=new;
             }  
         }
-        escrever(buf, size, add);
+        writeOP(buf, size, add);
     }
     if(strcmp(operation, "max")==0){
-        if(pronto==lines){
-            add = linhas[0];
+        if(ready==lines){
+            add = vlines[0];
             for(i=0; i < lines; i++){
-                if(linhas[i] > add) add =linhas[i];
+                if(vlines[i] > add) add =vlines[i];
             }
             for(i=lines-1; i!=0; i--){
-                linhas[i] = linhas[i-1];
+                vlines[i] = vlines[i-1];
             }
-            linhas[0]=novo;
+            vlines[0]=new;
         }
         else{
-            if (pronto==0) add = 0;
+            if (ready==0) add = 0;
             else {
-                add = linhas[0];
-                for(i=0; i<pronto; i++){
-                    if(linhas[i] > add) add =linhas[i]; 
+                add = vlines[0];
+                for(i=0; i<ready; i++){
+                    if(vlines[i] > add) add =vlines[i];
                 }
             }
-            linhas[i] = novo;
-            pronto++;   
+            vlines[i] = new;
+            ready++;
         }
-        escrever(buf, size, add);
+        writeOP(buf, size, add);
     }
     if(strcmp(operation, "min")==0){
-        if(pronto==lines){
-            add = linhas[0];
+        if(ready==lines){
+            add = vlines[0];
             for(i=0; i < lines; i++){
-                if(linhas[i] < add) add =linhas[i];
+                if(vlines[i] < add) add =vlines[i];
             }
             for(i=lines-1; i!=0; i--){
-                linhas[i] = linhas[i-1];
+                vlines[i] = vlines[i-1];
             }
-            linhas[0]=novo;
+            vlines[0]=new;
         }
         else{
-            if (pronto==0) add = 0;
+            if (ready==0) add = 0;
             else {
-                add = linhas[0];
-                for(i=0; i<pronto; i++){
-                    if(linhas[i] < add) add =linhas[i]; 
+                add = vlines[0];
+                for(i=0; i<ready; i++){
+                    if(vlines[i] < add) add =vlines[i];
                 }
             }
-            linhas[i] = novo;
-            pronto++;   
+            vlines[i] = new;
+            ready++;
         }
-        escrever(buf, size, add);
+        writeOP(buf, size, add);
     }
     if(strcmp(operation, "sum")==0){
-        if(pronto==lines){
+        if(ready==lines){
             for(i=0; i < lines; i++){
-                add += linhas[i];
+                add += vlines[i];
             }
             for(i=lines-1; i!=0; i--){
-                linhas[i] = linhas[i-1];
+                vlines[i] = vlines[i-1];
             }
-            linhas[0]=novo;
+            vlines[0]=new;
         }
         else{
-            if (pronto==0) add = 0;
+            if (ready==0) add = 0;
             else {
-                for(i=0; i<pronto; i++){
-                    add += linhas[i]; 
+                for(i=0; i<ready; i++){
+                    add += vlines[i];
                 }
             }
-            linhas[i] = novo;
-            pronto++;   
+            vlines[i] = new;
+            ready++;
         }
-        escrever(buf, size, add);
+        writeOP(buf, size, add);
     }
 }
 
-void  window (void* buf, char* copia, int size, char* operation, int coluna){
+void window(void* buf, char* copy, int size, char* operation, int coluna){
     int c=1;
-    int produto;
+    int product;
     char* num;
-    for(num = strtok(copia, ":"); num != NULL && c<coluna; num = strtok(NULL, ":")){
+    for(num = strtok(copy, ":"); num != NULL && c<coluna; num = strtok(NULL, ":")){
         c++;
     }
     if (num==NULL){
@@ -150,20 +153,11 @@ void  window (void* buf, char* copia, int size, char* operation, int coluna){
         exit(-1);
     }
     else {
-        produto = atoi(num);
+        product = atoi(num);
 
-        operar(buf, size, operation, produto);
+        operate(buf, size, operation, product);
     }
 }
-
-ssize_t readln(int fildes, void *buf, int nbytes){
- 	char c;
- 	ssize_t i;
- 	for (i = 0; read(fildes, &c, 1) == 1 && c != '\n' && c!= '\0' && i < nbytes;i++){
-         ((char*)buf)[i] = c;
- 	}
- 	return i;
- }
 
 int main (int argc , char*argv[]) {
     if (argc != 4) {
@@ -173,23 +167,21 @@ int main (int argc , char*argv[]) {
     int c = atoi(argv[1]);
     int n = atoi(argv[3]);
     lines = n;
-    pronto = 0;
+    ready = 0;
     int i;
-
-    linhas = malloc (sizeof(int)*n);
+    vlines = malloc (sizeof(int)*n);
     for(i= 0; i< n; i++)
-        linhas[i] = 0;
-
+        vlines[i] = 0;
     i = 0;
-    char buf[1024];
-    char copia[1024];
+    char buf[PIPE_BUF];
+    char copy[PIPE_BUF];
 
- 
-    while ((i=readln(0,&buf, 1024))>0){
-        strcpy(copia, buf);
-        window(&buf, copia, i, argv[2], c);
-        memset(buf,0,1024);
-        memset(copia,0,1024);
+
+    while ((i=readln(0, buf, PIPE_BUF))>0){
+        strcpy(copy, buf);
+        window(&buf, copy, i, argv[2], c);
+        memset(buf,0,PIPE_BUF);
+        memset(copia,0,PIPE_BUF);
     }
 
    return 0;
