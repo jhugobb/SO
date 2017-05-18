@@ -66,6 +66,41 @@ pid_t node(char** argv){
 	_exit(0);
 }
 
+pid_t connect(char** argv, int argc){
+  if(argc < 3){
+    perror("missing arguments");
+    _exit(-1);
+  }
+  int i, j, inID, outID, tam = argc-2;
+  char buf[PIPE_BUF], *namein, *nameout, *ids[tam];
+  pid_t p;
+  for(i=0, j=2; i<tam && j<argc; i++, j++){
+    ids[i] = concat("in", argv[j]);
+  }
+  nameout = concat("out", argv[1]);
+  outID = open(nameout, O_RDONLY);
+  if(outID == -1) {
+    perror("This node doesn't exist");
+    _exit(-1);
+  }
+  p = fork();
+  if(!p){
+    while((read = readln(outID, buf, PIPE_BUF))>0){
+      i=0;
+      while(i<tam){
+        inID = open(ids[i], O_WRONLY);
+        write(inID, buf, read);
+        i++;
+      }
+      memset(buf, 0, PIPE_BUF);
+    }
+  }
+  else{
+    return p;
+  }
+  _exit(0);
+}
+
 int main(){
 	int i=0, id;
 	for(i=0;i<10;nodes[i++]=-1);
@@ -79,6 +114,25 @@ int main(){
 				nodes[id] = node(input);
 			}
 			else printf("Id not in range of storage\n");
+        }
+        else if(!strncmp(input[0], "connect", 7)){
+							id = atoi(input[1]);
+							if(id<10){
+								nodes[id] = connect(input);
+							}
+							else printf("Id not in range of storage\n");
+        }
+        else if(!strncmp(input[0], "disconnect", 10)){
+            printf("You typed disconnect!\n");
+        }
+        else if(!strncmp(input[0], "inject", 6)){
+            printf("You typed inject!\n");
+        }
+        else if(!strncmp(input[0], "print", 5)){
+            for(i=0;i<10;i++){
+                if(nodes[i]!=-1) printf("I EXIST: %d\n", nodes[i]);
+            }
+        }
 		}
 		else if(!strncmp(input[0], "connect", 7)){
 			printf("You typed connect!\n");
