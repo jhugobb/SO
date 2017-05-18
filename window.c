@@ -47,15 +47,22 @@ void operar(void* buf, int size, char* operation, int novo){
             linhas[0]=novo;
         }
         else{
-            if (pronto==0) add = 0;
+            if (pronto==0) {
+                add = 0;
+                linhas[0] = novo;
+                pronto++; 
+            }
             else {
                 for(i=0; i<pronto; i++){
                     add+= linhas[i];  
                 }
                 add = add/pronto;
-            }
-            linhas[i] = novo;
-            pronto++;   
+                pronto++; 
+                for(i=pronto-1; i!=0; i--){
+                    linhas[i] = linhas[i-1];
+                }
+                linhas[0]=novo;
+            }  
         }
         escrever(buf, size, add);
     }
@@ -181,6 +188,8 @@ int main (int argc , char*argv[]) {
     while ((i=readln(0,&buf, 1024))>0){
         strcpy(copia, buf);
         window(&buf, copia, i, argv[2], c);
+        memset(buf,0,1024);
+        memset(copia,0,1024);
     }
 
    return 0;
