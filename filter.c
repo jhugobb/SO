@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include "readln.h"
+#include "processInput.h"
 
 int operando;
 
@@ -15,91 +18,74 @@ void escrever(void* buf, int size){
         i++;
         c = ((char*)buf)[i];
     }
-    c = '\n';
-    write(1,&c,1);
 }
 
-void operar(void* buf, int size, char* operation, int novo){
-    int add=0;
-    int i=0;
+void operate(void* buf, int size, char* operation, int new){
     if((strcmp(operation, "<"))==0){
-        if(novo < operando){
+        if(new < operando){
             escrever(buf, size);
         }
     }
     if((strcmp(operation, "<="))==0){
-        if(novo <= operando){
+        if(new <= operando){
             escrever(buf, size);
         }
     }
     if((strcmp(operation, ">"))==0){
-        if(novo > operando){
+        if(new > operando){
             escrever(buf, size);
         }
     }
     if((strcmp(operation, ">="))==0){
-        if(novo >= operando){
+        if(new >= operando){
             escrever(buf, size);
         }
     }
     if((strcmp(operation, "!="))==0){
-        if(novo != operando){
+        if(new != operando){
             escrever(buf, size);
         }
     }
     if((strcmp(operation, "="))==0){
-        if(novo == operando){
+        if(new == operando){
             escrever(buf, size);
         }
     }
 }
 
-void  window (void* buf, char* copia, int size, char* operation, int coluna){
+void  window (void* buf, char* copy, int size, char* operation, int column){
     int c=1;
-    int produto;
-    char* num;
-    for(num = strtok(copia, ":"); num != NULL && c<coluna; num = strtok(NULL, ":")){
+    int product;
+    char *num;
+    for(num = strtok(copy, ":"); num != NULL && c<column; num = strtok(NULL, ":")){
         c++;
     }
     if (num==NULL){
-        perror("missing columns");
+        perror("Missing columns!");
         exit(-1);
     }
     else {
-        produto = atoi(num);
-
-        operar(buf, size, operation, produto);
+        product = atoi(num);
+        operate(buf, size, operation, product);
     }
 }
 
-ssize_t readln(int fildes, void *buf, int nbytes){
- 	char c;
- 	ssize_t i;
- 	for (i = 0; read(fildes, &c, 1) == 1 && c != '\n' && c!= '\0' && i < nbytes;i++){
-         ((char*)buf)[i] = c;
- 	}
- 	return i;
- }
-
 int main (int argc , char*argv[]) {
     if (argc != 4) {
-        perror("missing arguments or too much arguments");
+        perror("Missing arguments or too much arguments!");
         exit(-1);
     }
     int c = atoi(argv[1]);
     int n = atoi(argv[3]);
+    int i=0;
+    char buf[PIPE_BUF];
+    char copy[PIPE_BUF];
     operando = n;
 
-    int i=0;
-
-    char buf[1024];
-    char copia[1024];
-
- 
-    while ((i=readln(0,&buf, 1024))>0){
-        strcpy(copia, buf);
-        window(&buf, copia, i, argv[2], c);
+    while ((i=readln(0, buf, PIPE_BUF))>0){
+        strcpy(copy, buf);
+        window(&buf, copy, i, argv[2], c);
+        memset(buf, 0, i);
     }
-
    return 0;
 }
