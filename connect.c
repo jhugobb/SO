@@ -14,13 +14,16 @@
 #define READ 0
 #define WRITE 1
 
-pid_t connect(char** argv, int argc){
+pid_t connects[50];
+int connections[50][50];
+
+void connect(char** argv, int argc){
   if(argc < 3){
     perror("missing arguments");
     _exit(-1);
   }
-  int i, j, inID, outID, tam = argc-2;
-  char buf[PIPE_BUF], *namein, *nameout, *ids[tam];
+  int i, j, id, read, inID, outID, tam = argc-2;
+  char buf[PIPE_BUF], *nameout, *ids[tam];
   pid_t p;
   for(i=0, j=2; i<tam && j<argc; i++, j++){
     ids[i] = concat("in", argv[j]);
@@ -32,8 +35,16 @@ pid_t connect(char** argv, int argc){
     _exit(-1);
   }
   p = fork();
+  id = atoi(argv[1]);
+  for(i=2; i<argc; i++){
+    connections[id][atoi(argv[i])] = 1;
+  }
+  if(connects[id] != 0) {
+    kill(connects[id], SIGTERM);
+    connects[id] = p;
+  }
   if(!p){
-    while((read = readln(outID, buf, PIPE_BUF))>0){
+    while((read=readln(outID, buf, PIPE_BUF))>0){
       i=0;
       while(i<tam){
         inID = open(ids[i], O_WRONLY);
@@ -44,29 +55,13 @@ pid_t connect(char** argv, int argc){
     }
   }
   else{
-    return p;
+    //return p;
   }
   _exit(0);
 }
 
 int main(int argc, char** argv){
-  if(argc < 3){
-    perror("missing arguments");
-    _exit(-1);
-  }
-  int i, j, inID, outID, tam = argc-2;
-  char buf[PIPE_BUF], *namein, *nameout, *ids[tam];
-
-  for(i=0, j=2; i<tam && j<argc; i++, j++){
-    ids[i] = concat("in", argv[j]);
-  }
-  nameout = concat("out", argv[1]);
-  outID = open(nameout, O_RDONLY);
-  if(outID == -1) {
-    perror("This node doesn't exist");
-    _exit(-1);
-  }
-  sendInfo(inID, outID, ids, tam, buf, PIPE_BUF);
-
+  //pid_t p;
+  connect(argv, argc);
   return 0;
 }
