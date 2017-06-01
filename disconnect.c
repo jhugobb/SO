@@ -35,8 +35,8 @@ void disconnect(char** argv, int argc){
         kill(connects[firstN], SIGTERM);
         if(!p){
             for(i=0; i<j; i++){
-                concat(args, ((char**)linked)[i]);
-                concat(args, " ");
+                args = concat(args, ((char**)linked)[i]);
+                args = concat(args, " ");
             }
             execvp("./connect", &args);
         }
