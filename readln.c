@@ -7,15 +7,18 @@
 #include <stdlib.h>
 #include <signal.h>
 
-ssize_t readln(int fildes, char *buf, size_t nbyte){
-	char c;
-	ssize_t i = 0, r;
-	do{
-		r = read(fildes, &c, 1);
-		if(r==1){
-			buf[i] = c;
-			i++;
+int readln(int fildes, char *buf, int buf_size){
+	int n = 0, i = 1;
+	char c = 0;
+
+	while (i && n < buf_size && c!='\n'){
+		i = read(fildes, &c, 1);
+		if (i){
+			buf[n] = c;
+			n++;
 		}
-	} while(r && i<nbyte && c != '\n');
-	return i;
+		if(i && c=='\0') break;
+	}
+	buf[n-1]='\0';
+	return n;
 }

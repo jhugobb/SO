@@ -52,7 +52,7 @@ void operate(void* buf, int size, char* operation, int new){
             if (ready==0) {
                 add = 0;
                 vlines[0] = new;
-                ready++; 
+                ready++;
             }
 
             else {
@@ -60,12 +60,12 @@ void operate(void* buf, int size, char* operation, int new){
                     add+= vlines[i];
                 }
                 add = add/ready;
-                ready++; 
+                ready++;
                 for(i=ready-1; i!=0; i--){
                     vlines[i] = vlines[i-1];
                 }
                 vlines[0]=new;
-            }  
+            }
         }
         writeOP(buf, size, add);
     }
@@ -181,7 +181,7 @@ int main (int argc , char*argv[]) {
         strcpy(copy, buf);
         window(&buf, copy, i, argv[2], c);
         memset(buf,0,PIPE_BUF);
-        memset(copia,0,PIPE_BUF);
+        memset(copy,0,PIPE_BUF);
     }
 
    return 0;

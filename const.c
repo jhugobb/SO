@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <assert.h>
+#include <limits.h>
 #include "readln.h"
 
 int main(int argc, char **argv){
@@ -16,14 +17,14 @@ int main(int argc, char **argv){
     }
     else{
         int i=0;
-        char buf[4096];
-		while((i = readln(0, buf,4096))>0){
+        char buf[PIPE_BUF];
+		while((i = readln(0, buf, PIPE_BUF))>0){
 			buf[i-1] = ':';
 			strcat(buf, argv[1]);
+            strcat(buf,"\n");
 			i+=strlen(argv[1]);
-			strcat(buf, "\n");
 			write(1, buf, i+1);
-			memset(buf, 0, 4096);
+			memset(buf, 0, i);
 		}
         return 0;
     }

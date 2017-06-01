@@ -7,17 +7,14 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <assert.h>
-#include "readln.h"
+#include <limits.h>
 
 #define READ 0
 #define WRITE 1
 
-int nodes[10];
-
 int main(int argc, char** argv){
     int i, infd, outfd,  nonamepipein[2], nonamepipeout[2];
-    for(i=0;i<10;nodes[i++]=-1);
-    char buf[512], result[512], c;
+    char buf[PIPE_BUF], result[PIPE_BUF], c;
     pid_t p, readlnp, dupexecp, writep;
     mkfifo("fifoin", 0666);
     mkfifo("fifoout", 0666);
@@ -27,9 +24,9 @@ int main(int argc, char** argv){
         pipe(nonamepipeout);
         readlnp = fork();
         if(!readlnp){
-			infd = open("fifoin", O_RDONLY);
             close(nonamepipein[READ]);
-            while((i = readln(infd, buf, 512)) > 0){
+            infd = open("fifoin", O_RDONLY);
+            while((i = readln(infd, buf, PIPE_BUF)) > 0){
                 write(nonamepipein[WRITE], buf, i);
             }
         }
@@ -41,29 +38,29 @@ int main(int argc, char** argv){
                 dup2(nonamepipein[READ], 0);//dup do std in para o pipe in
                 dup2(nonamepipeout[WRITE], 1);//dup do std out para o pipe out
                 execv("./const", &argv[2]);
+
             }
             else{
                 writep = fork();
                 if(!writep){
-					outfd = open("fifoout", O_WRONLY);
                     close(nonamepipeout[WRITE]);
-                    while((i = readln(nonamepipeout[READ], buf, 512))>0){
-						write(outfd, buf, i);
-						fsync(outfd);
+                    outfd = open("fifoout", O_WRONLY);
+                    while((i = readln(nonamepipeout[READ], buf, PIPE_BUF))>0){
+                        write(outfd, buf, i);
+                        fsync(outfd);
                     }
                 }
             }
         }
-
     }
     else{
-        i = readln(0, buf, 512);
-		infd = open("fifoin", O_WRONLY);
-		write(infd, buf, i);
-		fsync(infd);
-		outfd = open("fifoout", O_RDONLY);
-        i = readln(outfd, result, 512);
-		write(1, result, i);
-	   }
+        i = readln(0, buf, PIPE_BUF);
+        infd = open("fifoin", O_WRONLY);
+        write(infd, buf, i);
+        fsync(infd);
+        outfd = open("fifoout", O_RDONLY);
+        i = read(outfd, result, PIPE_BUF);
+        write(1, result, i);
+    }
     return 0;
 }

@@ -3,7 +3,7 @@ FLAGS = -Wall -g
 
 build: readln
 	$(CC) $(FLAGS) controller.c readln.o concat.o processInput.o -o controller
-	$(CC) $(FLAGS) const.c readln.o -o const
+	$(CC) $(FLAGS) const.c readln.o concat.o -o const
 	$(CC) $(FLAGS) filter.c readln.o processInput.o -o filter
 	$(CC) $(FLAGS) window.c readln.o processInput.o -o window
 	$(CC) $(FLAGS) spawn.c readln.o processInput.o concat.o -o spawn
@@ -14,8 +14,8 @@ readln: concat
 concat: processInput
 	$(CC) $(FLAGS) -c concat.c
 
-processInput:
+processInput: clean
 	$(CC) $(FLAGS) -c processInput.c
 
 clean:
-	rm controller const filter window spawn *.o in* out*
+	$(RM) connect const filter window spawn *.o in* out*
