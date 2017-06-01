@@ -18,4 +18,4 @@ processInput: clean
 	$(CC) $(FLAGS) -c processInput.c
 
 clean:
-	$(RM) connect const filter window spawn *.o in* out*
+	$(RM) controller const filter window spawn *.o in* out*
