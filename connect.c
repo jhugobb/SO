@@ -18,6 +18,8 @@
 pid_t nodes[10];
 pid_t connects[50];
 int connections[50][50];
+int infds[50];
+int outfds[50];
 
 
 pid_t node(char** argv){
@@ -34,10 +36,11 @@ pid_t node(char** argv){
         pipe(nonamepipeout);
         readlnp = fork();
         if(!readlnp){
+            close(nonamepipein[READ]);
             infd = open(namein, O_RDONLY);
             printf("%s abriu o pipe de entrada\n", argv[1]);
-            close(nonamepipein[READ]);
             while((i = readln(infd, buf, PIPE_BUF)) > 0){
+                printf("%s leu do pipe de entrada\n", argv[1]);
                 write(nonamepipein[WRITE], buf, i);
                 printf("%s escreveu no anonIn\n", argv[1]);
             }
@@ -56,8 +59,10 @@ pid_t node(char** argv){
                 writep = fork();
                 if(!writep){
                     outfd = open(nameout, O_WRONLY);
+                    printf("%s abriu o pipe de saida\n", argv[1]);
                     close(nonamepipeout[WRITE]);
                     while((i = readln(nonamepipeout[READ], buf, PIPE_BUF))>0){
+                        printf("%s leu do anonOut\n", argv[1]);
                         write(outfd, buf, i);
                         printf("%s escreveu no nameOut\n", argv[1]);
                         fsync(outfd);
@@ -78,39 +83,54 @@ void connect(int argc, char** argv){
         _exit(-1);
     }
     int id = atoi(argv[1]), i;
-    if(connects[atoi(argv[1])]){
-        kill(connects[atoi(argv[1])], SIGTERM);
+	if(nodes[id]==0){
+		perror("nodo não existe");
+	}
+	if(connects[id]){
+        kill(connects[id], SIGTERM);
     }
     for(i=2; i<argc; i++){
+		if(nodes[atoi(argv[i])]==0){
+			perror("nodo não existe");
+		}
         connections[id][atoi(argv[i])] = 1;
     }
     pid_t p;
+	printf("O MEU NODO DE DESTINO É %s\n", argv[2]);
     p = fork();
     if(!p){
-        int r, size = argc-2, ins[size], outfd;
-        char buf[PIPE_BUF], *nameout, *in, number[4];
+        int r,j, size = argc-2, ins[size];
+        char buf[PIPE_BUF], *nameout, *in, number[PIPE_BUF];
         nameout = concat("out", argv[1]);
-        for(i=0; i<50; i++){
+        for(i=0, j=0; i<50; i++){
             if(connections[id][i]){
                 sprintf(number, "%d", i);
                 in = concat("in", number);
-                ins[i-2]=open(in, O_WRONLY);
+                infds[i] = ins[j]=open(in, O_WRONLY);
+                j++;
+				if(infds[i]==-1){
+					perror("Error opening pipe");
+					connects[id]=0;
+					_exit(-1);
+				}
                 printf("connector abriu o pipe %s\n", in);
             }
         }
-        outfd = open(nameout, O_RDONLY);
+        outfds[id] = open(nameout, O_RDONLY);
+		if(outfds[id]==-1){
+			perror("Error opening pipe");
+			connects[id]=0;
+			_exit(-1);
+		}
         printf("connector abriu o pipe %s\n", nameout);
-        while((r = readln(outfd, buf, PIPE_BUF))>0){
-            printf("O QUE LEU: %s\n", buf);
+        while((r = readln(outfds[id], buf, PIPE_BUF))>0){
             for(i=0; i<size; i++){
                 write(ins[i], buf, r);
                 printf("connector escreveu no pipe %s\n", in);
+                printf("O QUE ESTAVA NO BUF: %s\n", buf);
             }
         }
         _exit(0);
-    }
-    else{
-        connects[atoi(argv[1])] =  p;
     }
 }
 
@@ -135,6 +155,12 @@ int main(int argc, char** argv){
     processInput(result, copy, " ");
     node(result);
     memset(buf, 0, r);
+    //node 3
+    r= readln(0, buf, PIPE_BUF);
+    strcpy(copy, buf);
+    processInput(result, copy, " ");
+    node(result);
+    memset(buf, 0, r);
     //connect
     r = readln(0, buf, PIPE_BUF);
     strcpy(copy, buf);
@@ -142,14 +168,27 @@ int main(int argc, char** argv){
     connect(i, result);
     memset(buf, 0, r);
 
-    int infd = open("in1", O_WRONLY);
-    int outfd = open("out2", O_RDONLY);
-    while((r=readln(0, buf, PIPE_BUF))>0){
-        write(infd, buf, r);
-        memset(buf, 0, r);
-        r = readln(outfd, buf, PIPE_BUF);
-        write(1, buf, r);
-        memset(buf, 0, r);
-    }
+    int infd = open("in22", O_WRONLY);
+    int outfd3 = open("out7", O_RDONLY);
+    r=readln(0, buf, PIPE_BUF);
+    write(infd, buf, r);
+    memset(buf, 0, r);
+    r = readln(outfd3, buf, PIPE_BUF);
+    write(1, buf, r);
+    memset(buf, 0, r);
+
+    r = readln(0, buf, PIPE_BUF);
+    strcpy(copy, buf);
+    i = processInput(result, copy, " ");
+    connect(i, result);
+    memset(buf, 0, r);
+
+    outfd3 = open("out1", O_RDONLY);
+    r = readln(0, buf, PIPE_BUF);
+    write(infd, buf, r);
+    memset(buf, 0, r);
+    r = readln(outfd3, buf, PIPE_BUF);
+    write(1, buf, r);
+    memset(buf, 0, r);
     return 0;
 }

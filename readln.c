@@ -17,7 +17,7 @@ int readln(int fildes, char *buf, int buf_size){
 			buf[n] = c;
 			n++;
 		}
-		if(i && c=='\0') break;
+		if(c=='\0') break;
 	}
 	buf[n-1]='\0';
 	return n;
