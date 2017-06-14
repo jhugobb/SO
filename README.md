@@ -2,7 +2,7 @@
 University project for Operating Systems
 
 ## What am I looking at?
-This project is inspired by a Stream Processing network like [Apache Storm][1]. It simulates a network of components to filter, modify and process several events. It is meant for Linux systems, and it introduces concepts such as forks, pipes and signals. It is able to run several [commands](https://github.com/p3rsephone/SO-Project/wiki/Commands). You can thank [p3rsephone](https://github.com/p3rsephone) for this beauty of a readme.
+This project is inspired by a Stream Processing network like [Apache Storm][1]. It simulates a network of components to filter, modify and process several events. It is meant for Linux systems, and it introduces concepts such as forks, pipes and signals. It is able to run several [commands](https://github.com/p3rsephone/SO-Project/wiki/Commands). You can thank [p3rsephone](https://github.com/p3rsephone) for this beauty of a readme on the commands.
 
 ## How do I make it work? Do I say "hi siri!"?
 Not yet, but we will take note of that. Use `make build` and then `./controller`.
@@ -19,8 +19,8 @@ No you do not. With every `make build` you clean it all up before recompiling. I
 - [ ] Make it brew fresh coffee
 - [ ] Make it respond to "hi siri!"
 
-## Contributors
-Made by:
+## Who made this? I need to give each of them a handshake
+Well, thank these guys. They are awesome.
 
 [Hugo Brandão (Me!)](https://github.com/jhugobb)
 
