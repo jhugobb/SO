@@ -9,9 +9,9 @@
 #include <signal.h>
 #include <limits.h>
 #include <assert.h>
-#include "readln.h"
-#include "concat.h"
-#include "processInput.h"
+#include "headers/readln.h"
+#include "headers/concat.h"
+#include "headers/processInput.h"
 
 #define READ 0
 #define WRITE 1
@@ -59,8 +59,8 @@ pid_t node(char** argv){
 	char buf[PIPE_BUF], *namein, *nameout;
 	pid_t p;
 	id = atoi(argv[1]);
-	namein = concat("in", argv[1]);
-	nameout = concat("out", argv[1]);
+	namein = concat("pipes/in", argv[1]);
+	nameout = concat("pipes/out", argv[1]);
 	mkfifo(namein, 0666);
 	mkfifo(nameout, 0666);
 	p = fork();
@@ -134,11 +134,11 @@ pid_t connect(int argc, char** argv){
 	if(!p){
 		int r,j, size = argc-2, ins[size];
 		char buf[PIPE_BUF], *nameout, *in, number[4];
-		nameout = concat("out", argv[1]);
+		nameout = concat("pipes/out", argv[1]);
 		for(i=0, j=0; i<50; i++){
 			if(connections[id][i]){
 				sprintf(number, "%d", i);
-				in = concat("in", number);
+				in = concat("pipes/in", number);
 				infds[i] = ins[j]=open(in, O_WRONLY);
 				j++;
 				if(infds[i]==-1){
@@ -196,12 +196,12 @@ pid_t disconnect(int argc, char** argv){
 	if(!p){
 		int r,j, size = argc-2, ins[size], outfd, flag = 0;
 		char buf[PIPE_BUF], *nameout, *in, number[4];
-		nameout = concat("out", argv[1]);
+		nameout = concat("pipes/out", argv[1]);
 		for(i=0,j=0; i<50; i++){
 			if(connections[id][i]){
 				flag=1;
 				sprintf(number, "%d", i);
-				in = concat("in", number);
+				in = concat("pipes/in", number);
 				ins[j]=open(in, O_WRONLY);
 				j++;
 			}
@@ -231,7 +231,7 @@ pid_t disconnect(int argc, char** argv){
 void inject(int argc, char** argv){
 	int i, nonamepipeout[2];
 	char* id;
-	id = concat("in", argv[1]);
+	id = concat("pipes/in", argv[1]);
 	char buf[PIPE_BUF];
 	pid_t p;
 	pipe(nonamepipeout);

@@ -1,6 +1,6 @@
 node 1 const bytes
 node 2 tee entrylog.txt
-node 3 window 2 avg 2
+node 3 window 2 avg 10
 node 4 filter 2 < 4
 node 6 const -1
 node 7 tee changelog.txt

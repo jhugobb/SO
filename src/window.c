@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include "readln.h"
+#include "headers/readln.h"
+#include "headers/concat.h"
+#include "headers/processInput.h"
 
 int *vlines;
 int lines;

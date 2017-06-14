@@ -8,9 +8,9 @@
 #include <signal.h>
 #include <limits.h>
 #include <sys/wait.h>
-#include "readln.h"
-#include "concat.h"
-#include "processInput.h"
+#include "headers/readln.h"
+#include "headers/concat.h"
+#include "headers/processInput.h"
 
 void writeOP(char* buf, char* execResult, int sizeBuf){
     char* final;

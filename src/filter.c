@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include "readln.h"
-#include "processInput.h"
+#include "headers/readln.h"
+#include "headers/concat.h"
+#include "headers/processInput.h"
 
 
 void escrever(void* buf, int size){

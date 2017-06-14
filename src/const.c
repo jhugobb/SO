@@ -8,7 +8,9 @@
 #include <signal.h>
 #include <assert.h>
 #include <limits.h>
-#include "readln.h"
+#include "headers/readln.h"
+#include "headers/concat.h"
+#include "headers/processInput.h"
 
 int main(int argc, char **argv){
     if(argc != 2 ){
